@@ -3,7 +3,7 @@
 ## Namen
 
 - Mike Steidle
-- [Name des Teamkollegen]
+- [Jerome Meier
 
 ## Link zum Git-Repository
 
