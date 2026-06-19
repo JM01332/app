@@ -1,0 +1,18 @@
+@baseUrl = http://localhost:8080
+
+### Unbekanntes JSON-Feld wird abgelehnt: 400 Bad Request
+POST {{baseUrl}}/api/carriers
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Unknown Field Test",
+  "nation": "Germany",
+  "carrierType": "HELICOPTER_CARRIER",
+  "commandCenter": {
+    "codeName": "Control",
+    "securityLevel": 3
+  },
+  "aircrafts": [],
+  "unexpected": true
+}

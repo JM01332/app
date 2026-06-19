@@ -1,0 +1,33 @@
+@baseUrl = http://localhost:8080
+
+### Carrier erstmals anlegen: 201 Created
+POST {{baseUrl}}/api/carriers
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Duplicate Name Test",
+  "nation": "Germany",
+  "carrierType": "AIRCRAFT_CARRIER",
+  "commandCenter": {
+    "codeName": "First Command",
+    "securityLevel": 2
+  },
+  "aircrafts": []
+}
+
+### Denselben Namen erneut anlegen: 409 Conflict
+POST {{baseUrl}}/api/carriers
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Duplicate Name Test",
+  "nation": "France",
+  "carrierType": "HELICOPTER_CARRIER",
+  "commandCenter": {
+    "codeName": "Second Command",
+    "securityLevel": 4
+  },
+  "aircrafts": []
+}
