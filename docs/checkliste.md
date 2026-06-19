@@ -24,9 +24,9 @@ Diese Checkliste begleitet die Umsetzung der Go-REST-API. Zuständigkeiten werde
 - [x] Konfiguration aus Umgebungsvariablen laden
 - [x] `PORT` mit sinnvollem Standardwert unterstützen
 - [ ] Zap-Logger einrichten
-- [ ] Gin-Router erstellen
-- [ ] `GET /health` implementieren
-- [ ] Health-Check mit `httptest` testen
+- [x] Gin-Router erstellen
+- [x] `GET /health` implementieren
+- [x] Health-Check mit `httptest` testen
 - [ ] Server über `cmd/api/main.go` starten
 
 ### Person B – Datenbank und Modell
