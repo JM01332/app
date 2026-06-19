@@ -17,8 +17,7 @@
 
 ### Chat-URLs
 
-- [Freigabelink eintragen, falls vorhanden]
-- Falls nicht vorhanden: „Codex wurde direkt in der IDE verwendet.“
+- „Codex wurde direkt in der IDE verwendet.“
 
 ## Frameworks und Bibliotheken
 
