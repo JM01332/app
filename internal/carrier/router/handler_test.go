@@ -67,6 +67,9 @@ func TestCreateReturnsCreatedCarrier(t *testing.T) {
 	if location := response.Header().Get("Location"); location != "/api/carriers/1000" {
 		t.Fatalf("Location = %q, want /api/carriers/1000", location)
 	}
+	if response.Body.Len() != 0 {
+		t.Fatalf("response body = %q, want empty body", response.Body.String())
+	}
 	if service.createInput.Name != "Enterprise" {
 		t.Fatalf("create input name = %q, want Enterprise", service.createInput.Name)
 	}

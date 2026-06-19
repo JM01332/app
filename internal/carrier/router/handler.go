@@ -79,9 +79,8 @@ func (handler *Handler) Create(context *gin.Context) {
 		return
 	}
 
-	response := mapCarrierResponse(*carrier)
-	context.Header("Location", "/api/carriers/"+strconvFormatInt64(response.ID))
-	context.JSON(http.StatusCreated, response)
+	context.Header("Location", "/api/carriers/"+strconvFormatInt64(carrier.ID))
+	context.Status(http.StatusCreated)
 }
 
 func decodeStrictJSON(body io.Reader, target any) error {
