@@ -7,7 +7,7 @@
 
 ## Link zum Git-Repository
 
-https://github.com/JM01332/app
+[github.com/JM01332/app](https://github.com/JM01332/app)
 
 ## KI-Werkzeuge
 
@@ -62,8 +62,11 @@ Ausführen mit:
 
 ```powershell
 go test ./...
+```
 
-# Agent-Log Mike Steidle
+## Prompts/Requests an KI-Agent/en
+
+### Agent-Log Mike Steidle
 
 Dieses Log enthält nur Prompts und Entscheidungen, die zu einem überprüfbaren Projektfortschritt geführt haben. Reine Verständnisfragen, kurze Rückfragen und Nachrichten wie „weiter“ werden nicht einzeln protokolliert.
 
@@ -346,7 +349,7 @@ Der abschließende Live-Test war ebenfalls erfolgreich: Der Server konnte die OI
 **Commit:**
 `a89c35e feat: secure carrier routes with Keycloak OIDC`
 
-# Agent-Log Jérôme Meier
+### Agent-Log Jérôme Meier
 
 ## 2026-06-19 15:10 +02:00 - PostgreSQL beim Serverstart pruefen
 
