@@ -30,6 +30,19 @@ Verwende für diese Aufgabe den folgenden Stack, sofern die spätere Fachaufgabe
 
 Keine zusätzliche Bibliothek einführen, wenn Gin, GORM, Validator, Zap oder die Go-Standardbibliothek die Anforderung bereits sinnvoll abdecken.
 
+## Go-Lernkontext und Erklärpflicht
+
+Die Beteiligten verwenden Go in diesem Projekt zum ersten Mal. Der Agent soll deshalb nicht nur funktionierenden Code liefern, sondern die Arbeit mit Go nachvollziehbar vermitteln.
+
+- Im gesamten Projekt etablierte Go-Best-Practices und idiomatische Go-Konventionen verwenden.
+- Bei jeder Änderung kurz erklären, warum die gewählte Lösung für Go passend ist.
+- Neu verwendete Go-Sprachmittel und Standardbibliotheksfunktionen verständlich erklären, beispielsweise Packages, Structs, Interfaces, Methoden, Pointer, Fehlerbehandlung, `defer`, Goroutines oder Contexts.
+- Bei Framework- oder Bibliotheksfunktionen erklären, welche Aufgabe sie übernehmen und wie sie in den Ablauf der Anwendung passen.
+- Erklärungen am Wissensstand von Go-Einsteigern ausrichten, Fachbegriffe beim ersten Auftreten erläutern und kleine konkrete Beispiele bevorzugen.
+- Keine unnötig fortgeschrittenen Sprachmittel oder Abstraktionen einsetzen. Falls eine komplexere Lösung nötig ist, deren Nutzen und Alternative benennen.
+- Best Practices nicht nur behaupten, sondern anhand der konkreten Änderung begründen.
+- Den Code trotzdem übersichtlich halten; Lernhinweise gehören primär in die Kommunikation und Dokumentation, nicht als übermäßige Kommentare in jede Codezeile.
+
 ## Initialisierung
 
 Wenn noch kein Go-Starterprojekt vorhanden ist, initialisiere das Projekt schlank und nachvollziehbar:
@@ -214,7 +227,7 @@ Inhaltlich soll sie mindestens festhalten:
 
 ## Protokollierung der KI-Nutzung
 
-Zusätzlich zur README `docs/agent-log.md` pflegen. Nach jedem größeren Schritt notieren:
+Zusätzlich zur README die lokale Datei `docs/agent-log.md` pflegen. Sie ist persönliche Dokumentation, wird über `.gitignore` ausgeschlossen und nicht committed. Nach jedem größeren Schritt notieren:
 
 - Datum/Uhrzeit,
 - Ziel des Arbeitsschritts,
