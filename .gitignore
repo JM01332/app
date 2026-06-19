@@ -2,7 +2,7 @@
 *.exe
 *.test
 coverage.out
-docs/agent-log.md
+docs/
 
 .idea/
 .vscode/

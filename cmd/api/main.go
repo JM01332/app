@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/JM01332/app/internal/app"
 	"github.com/JM01332/app/internal/config"
+	"github.com/JM01332/app/internal/database"
 	"go.uber.org/zap"
 )
 
@@ -33,18 +35,28 @@ func main() {
 		_ = logger.Sync()
 	}()
 
-	serverConfig, err := config.LoadServer()
+	appConfig, err := config.Load()
 	if err != nil {
-		logger.Fatal("load server configuration", zap.Error(err))
+		logger.Fatal("load application configuration", zap.Error(err))
 	}
 
+	postgres, err := database.OpenPostgres(context.Background(), appConfig.DatabaseURL)
+	if err != nil {
+		logger.Fatal("connect to PostgreSQL", zap.Error(err))
+	}
+	defer func() {
+		if err := postgres.Close(); err != nil {
+			logger.Error("close PostgreSQL connection", zap.Error(err))
+		}
+	}()
+
 	server := &http.Server{
-		Addr:              net.JoinHostPort("", serverConfig.Port),
+		Addr:              net.JoinHostPort("", appConfig.Port),
 		Handler:           app.NewRouter(),
 		ReadHeaderTimeout: readHeaderTimeout,
 	}
 
-	printBanner(serverConfig.Port)
+	printBanner(appConfig.Port)
 	logger.Info("starting API server", zap.String("address", server.Addr))
 	if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		logger.Fatal("API server stopped", zap.Error(err))
