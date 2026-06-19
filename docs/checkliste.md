@@ -21,8 +21,8 @@ Diese Checkliste begleitet die Umsetzung der Go-REST-API. Zuständigkeiten werde
 
 ### Person A – API und Anwendung
 
-- [ ] Konfiguration aus Umgebungsvariablen laden
-- [ ] `PORT` mit sinnvollem Standardwert unterstützen
+- [x] Konfiguration aus Umgebungsvariablen laden
+- [x] `PORT` mit sinnvollem Standardwert unterstützen
 - [ ] Zap-Logger einrichten
 - [ ] Gin-Router erstellen
 - [ ] `GET /health` implementieren
@@ -32,9 +32,9 @@ Diese Checkliste begleitet die Umsetzung der Go-REST-API. Zuständigkeiten werde
 ### Person B – Datenbank und Modell
 
 - [ ] Zugriff auf den bestehenden PostgreSQL-Server prüfen
-- [ ] `DATABASE_URL` oder vereinbarte DB-Variablen dokumentieren
-- [ ] GORM-Verbindung implementieren
-- [ ] Verbindungsfehler kontrolliert behandeln und loggen
+- [x] `DATABASE_URL` oder vereinbarte DB-Variablen dokumentieren
+- [x] GORM-Verbindung implementieren
+- [x] Verbindungsfehler kontrolliert behandeln
 - [ ] Bestehendes Datenbankschema prüfen
 - [ ] GORM-Modell anhand des Schemas anlegen
 - [ ] Keine Migration ohne vorherige Abstimmung ausführen
