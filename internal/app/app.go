@@ -13,7 +13,7 @@ type healthResponse struct {
 }
 
 // NewRouter creates the HTTP router with all application routes.
-func NewRouter(carrierService carrierrouter.CarrierService, logger *zap.Logger) *gin.Engine {
+func NewRouter(carrierService carrierrouter.CarrierService, logger *zap.Logger, authMiddleware gin.HandlerFunc) *gin.Engine {
 	if logger == nil {
 		logger = zap.NewNop()
 	}
@@ -23,7 +23,11 @@ func NewRouter(carrierService carrierrouter.CarrierService, logger *zap.Logger) 
 
 	router.GET("/health", health)
 	if carrierService != nil {
-		carrierrouter.RegisterRoutes(router.Group("/api"), carrierService)
+		api := router.Group("/api")
+		if authMiddleware != nil {
+			api.Use(authMiddleware)
+		}
+		carrierrouter.RegisterRoutes(api, carrierService)
 	}
 
 	return router

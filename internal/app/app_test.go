@@ -15,7 +15,7 @@ import (
 
 func TestHealth(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	router := NewRouter(nil, zap.NewNop())
+	router := NewRouter(nil, zap.NewNop(), nil)
 
 	request := httptest.NewRequest(http.MethodGet, "/health", nil)
 	response := httptest.NewRecorder()
@@ -42,9 +42,41 @@ func TestHealth(t *testing.T) {
 
 func TestCarrierRoutesAreRegistered(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	router := NewRouter(&fakeCarrierService{}, zap.NewNop())
+	router := NewRouter(&fakeCarrierService{}, zap.NewNop(), nil)
 
 	request := httptest.NewRequest(http.MethodGet, "/api/carriers", nil)
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusOK {
+		t.Errorf("status code = %d, want %d", response.Code, http.StatusOK)
+	}
+}
+
+func TestCarrierRoutesUseAuthMiddleware(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	router := NewRouter(&fakeCarrierService{}, zap.NewNop(), func(context *gin.Context) {
+		context.AbortWithStatus(http.StatusUnauthorized)
+	})
+
+	request := httptest.NewRequest(http.MethodGet, "/api/carriers", nil)
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusUnauthorized {
+		t.Errorf("status code = %d, want %d", response.Code, http.StatusUnauthorized)
+	}
+}
+
+func TestHealthDoesNotUseAuthMiddleware(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	router := NewRouter(&fakeCarrierService{}, zap.NewNop(), func(context *gin.Context) {
+		context.AbortWithStatus(http.StatusUnauthorized)
+	})
+
+	request := httptest.NewRequest(http.MethodGet, "/health", nil)
 	response := httptest.NewRecorder()
 
 	router.ServeHTTP(response, request)
