@@ -17,20 +17,31 @@ Diese Datei legt fest, wie zwei Personen parallel an der Carrier-REST-API arbeit
 
 ### Endpunkte
 
-- [ ] GET-Pfad: `________________________________________`
-- [ ] POST-Pfad: `_______________________________________`
-- [ ] Nur Listen-GET oder zusätzlich Detail-GET festgelegt
-- [ ] Verhalten bei leerer Liste festgelegt
-- [ ] Sortierung der Liste festgelegt
+- [x] GET-Pfad: `GET /api/carriers`
+- [x] POST-Pfad: `POST /api/carriers`
+- [x] In der Pflichtphase nur Listen-GET, kein Detail-GET
+- [x] Eine leere Liste liefert `200 OK` mit `[]`
+- [x] Die Liste wird stabil nach `id` aufsteigend sortiert
 
 ### POST-Inhalt
 
-- [ ] Wird `commandCenter` zwingend mit angelegt?
-- [ ] Werden `aircrafts` direkt mit angelegt?
-- [ ] Darf die Aircraft-Liste leer sein?
-- [ ] Pflichtfelder und maximale Textlängen festgelegt
-- [ ] Unbekannte JSON-Felder ablehnen oder ignorieren?
-- [ ] Carrier und Beziehungen gemeinsam in einer Transaktion speichern?
+- [x] `commandCenter` wird zwingend mit dem Carrier angelegt
+- [x] `aircrafts` werden direkt mit dem Carrier angelegt
+- [x] Das Feld `aircrafts` ist erforderlich, darf aber eine leere Liste enthalten
+- [x] Pflichtfelder und maximale Textlängen sind festgelegt
+- [x] Unbekannte JSON-Felder werden mit `400 Bad Request` abgelehnt
+- [x] Carrier und Beziehungen werden gemeinsam in einer Transaktion gespeichert
+
+Validierungsregeln:
+
+- `name`: erforderlich, 2 bis 50 Zeichen
+- `nation`: erforderlich, 2 bis 50 Zeichen
+- `carrierType`: erforderlich, erlaubter Enum-Wert
+- `commandCenter.codeName`: erforderlich, 2 bis 50 Zeichen
+- `commandCenter.securityLevel`: erforderlich, Ganzzahl von 1 bis 5
+- `aircrafts`: erforderliches Feld, leere Liste erlaubt
+- `aircrafts[].model`: erforderlich, 1 bis 50 Zeichen
+- `aircrafts[].manufacturer`: erforderlich, 2 bis 50 Zeichen
 
 Diskussionsentwurf für den Request:
 
@@ -52,18 +63,58 @@ Diskussionsentwurf für den Request:
 }
 ```
 
-> Dieses JSON wird erst nach gemeinsamer Bestätigung zum verbindlichen Vertrag.
+Dieses JSON ist der verbindliche Create-Vertrag. IDs, Version und Zeitstempel werden vom Client nicht gesendet.
 
 ### Response und Fehler
 
-- [ ] Response-Felder und einheitliches `camelCase` festgelegt
-- [ ] Beziehungen in GET-Antworten: ja / nein
-- [ ] `version`, `erzeugt` und `aktualisiert` in Responses: ja / nein
-- [ ] Format für Validierungsfehler festgelegt
-- [ ] Ungültiges JSON: `400 Bad Request`
-- [ ] Doppelter Carrier-Name: `409 Conflict`
-- [ ] Fachlich ungültige Felder: `422 Unprocessable Content`
-- [ ] Unerwartete Fehler: `500 Internal Server Error` ohne interne Details
+- [x] Response-Felder verwenden einheitlich `camelCase`
+- [x] Command Center und Aircrafts sind in GET- und POST-Antworten enthalten
+- [x] `id`, `createdAt` und `updatedAt` werden ausgegeben; `version` bleibt intern
+- [x] Validierungsfehler verwenden das unten festgelegte Format
+- [x] Ungültiges JSON und unbekannte Felder: `400 Bad Request`
+- [x] Doppelter Carrier-Name: `409 Conflict`
+- [x] Fachlich ungültige Felder: `422 Unprocessable Content`
+- [x] Unerwartete Fehler: `500 Internal Server Error` ohne interne Details
+
+Ein erfolgreicher POST liefert `201 Created`, einen `Location`-Header mit `/api/carriers/{id}` und den erstellten Carrier als JSON.
+
+Verbindliche Response-Felder:
+
+```json
+{
+  "id": 1000,
+  "name": "Enterprise",
+  "nation": "United States",
+  "carrierType": "AIRCRAFT_CARRIER",
+  "commandCenter": {
+    "id": 1000,
+    "codeName": "Bridge",
+    "securityLevel": 5
+  },
+  "aircrafts": [],
+  "createdAt": "2026-06-19T12:00:00Z",
+  "updatedAt": "2026-06-19T12:00:00Z"
+}
+```
+
+Verbindliches Fehlerformat:
+
+```json
+{
+  "error": {
+    "code": "validation_failed",
+    "message": "Request validation failed",
+    "fields": [
+      {
+        "field": "name",
+        "message": "name is required"
+      }
+    ]
+  }
+}
+```
+
+Bei Fehlern ohne Feldbezug ist `fields` eine leere Liste. Vorgesehene Codes sind `invalid_json`, `validation_failed`, `carrier_name_exists` und `internal_error`.
 
 ## 3. Verbindlicher Datenbankvertrag
 
@@ -99,14 +150,15 @@ Diskussionsentwurf für den Request:
 
 ### Vor dem GORM-Modell entscheiden
 
-- [ ] Struct- und Feldnamen abgestimmt
-- [ ] Bestehende Tabellen- und Spaltennamen werden exakt abgebildet
-- [ ] `CarrierType` wird als eigener Go-Stringtyp modelliert
-- [ ] 1:1-Beziehung zu `CommandCenter` festgelegt
-- [ ] 1:n-Beziehung zu `Aircrafts` festgelegt
-- [ ] Werden Beziehungen bei GET mit `Preload` geladen?
-- [ ] Wer setzt `erzeugt` und `aktualisiert`?
-- [ ] Wird ein vollständiger POST in einer Transaktion gespeichert?
+- [x] Go-Typen heißen `Carrier`, `CarrierType`, `CommandCenter` und `Aircraft`
+- [x] Bestehende Tabellen- und Spaltennamen werden exakt mit GORM-Tags abgebildet
+- [x] `CarrierType` wird als eigener Go-Stringtyp modelliert
+- [x] `Carrier` enthält `CommandCenter` als 1:1-Beziehung
+- [x] `Carrier` enthält `Aircrafts []Aircraft` als 1:n-Beziehung
+- [x] GET lädt beide Beziehungen mit GORM `Preload`
+- [x] GORM setzt `Erzeugt` mit `autoCreateTime` und `Aktualisiert` mit `autoCreateTime`/`autoUpdateTime`
+- [x] Die GORM-Konfiguration erhält später eine UTC-`NowFunc`, damit Zeitstempel konsistent in UTC erzeugt werden
+- [x] Ein vollständiger POST wird in genau einer Transaktion gespeichert
 
 Wichtig: Das bestehende SQL-Schema definiert für `erzeugt` und `aktualisiert` keinen DB-Standardwert. Die Anwendung muss beide Werte beim Insert setzen.
 
@@ -117,15 +169,15 @@ Vor Parallelphase 2 Methodennamen und Typen gemeinsam festlegen:
 ```go
 type CarrierService interface {
     List(ctx context.Context) ([]model.Carrier, error)
-    Create(ctx context.Context, input CreateCarrierInput) (model.Carrier, error)
+    Create(ctx context.Context, input service.CreateCarrierInput) (*model.Carrier, error)
 }
 ```
 
-- [ ] Rückgabe als Wert oder Pointer festgelegt
-- [ ] Package für `CreateCarrierInput` festgelegt
-- [ ] Bekannte Service-Fehler festgelegt
-- [ ] Darstellung eines Namenskonflikts festgelegt
-- [ ] Zuständigkeit für Model-zu-Response-Mapping festgelegt
+- [x] `List` gibt eine Liste von Werten zurück; `Create` gibt einen Pointer auf den erzeugten Carrier zurück
+- [x] `CreateCarrierInput` liegt im Package `internal/carrier/service`
+- [x] Bekannter fachlicher Fehler: `service.ErrCarrierNameExists`
+- [x] `ErrCarrierNameExists` wird vom Handler auf `409 Conflict` abgebildet
+- [x] Das Router-Package mappt Models in Response-DTOs
 
 Das Router-Package darf ein kleines Interface für genau die benötigten Methoden definieren. Go erkennt implizit, ob der echte Service dieses Interface erfüllt. Dadurch kann der Router mit einem Fake-Service ohne PostgreSQL getestet werden.
 
@@ -263,12 +315,12 @@ test: add carrier API integration tests
 
 Die parallele Implementierung beginnt erst, wenn:
 
-- [ ] GET- und POST-Pfade feststehen
-- [ ] POST- und Response-JSON feststehen
-- [ ] Pflichtfelder und Validierungsregeln feststehen
-- [ ] Umgang mit Command Center und Aircrafts feststeht
-- [ ] Zeitstempel und Transaktion festgelegt sind
-- [ ] Fehlerformat und Statuscodes feststehen
-- [ ] Service-Methoden feststehen
-- [ ] Dateiverantwortung namentlich eingetragen ist
+- [x] GET- und POST-Pfade stehen fest
+- [x] POST- und Response-JSON stehen fest
+- [x] Pflichtfelder und Validierungsregeln stehen fest
+- [x] Umgang mit Command Center und Aircrafts steht fest
+- [x] Zeitstempel und Transaktion sind festgelegt
+- [x] Fehlerformat und Statuscodes stehen fest
+- [x] Service-Methoden stehen fest
+- [x] Dateiverantwortung ist als Person A und Person B eingetragen
 - [ ] Beide Personen vom gleichen geprüften Stand arbeiten
