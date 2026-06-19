@@ -19,11 +19,13 @@ const (
 	errorCodeInvalidJSON       = "invalid_json"
 	errorCodeValidationFailed  = "validation_failed"
 	errorCodeCarrierNameExists = "carrier_name_exists"
+	errorCodeCarrierNotFound   = "carrier_not_found"
 	errorCodeInternal          = "internal_error"
 )
 
 type CarrierService interface {
 	List(ctx context.Context) ([]model.Carrier, error)
+	GetByID(ctx context.Context, id int64) (*model.Carrier, error)
 	Create(ctx context.Context, input carrierservice.CreateCarrierInput) (*model.Carrier, error)
 }
 
@@ -43,6 +45,7 @@ func RegisterRoutes(router gin.IRouter, service CarrierService) {
 	handler := NewHandler(service)
 
 	router.GET("/carriers", handler.List)
+	router.GET("/carriers/:id", handler.GetByID)
 	router.POST("/carriers", handler.Create)
 }
 
@@ -54,6 +57,28 @@ func (handler *Handler) List(context *gin.Context) {
 	}
 
 	context.JSON(http.StatusOK, mapCarrierResponses(carriers))
+}
+
+func (handler *Handler) GetByID(context *gin.Context) {
+	id, err := strconv.ParseInt(context.Param("id"), 10, 64)
+	if err != nil || id <= 0 {
+		context.JSON(http.StatusBadRequest, newErrorResponse(errorCodeValidationFailed, "Carrier ID must be a positive integer", []FieldError{
+			{Field: "id", Message: "id must be a positive integer"},
+		}))
+		return
+	}
+
+	carrier, err := handler.service.GetByID(context.Request.Context(), id)
+	if errors.Is(err, carrierservice.ErrCarrierNotFound) {
+		context.JSON(http.StatusNotFound, newErrorResponse(errorCodeCarrierNotFound, "Carrier not found", nil))
+		return
+	}
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, newErrorResponse(errorCodeInternal, "Internal server error", nil))
+		return
+	}
+
+	context.JSON(http.StatusOK, mapCarrierResponse(*carrier))
 }
 
 func (handler *Handler) Create(context *gin.Context) {

@@ -59,6 +59,10 @@ func (service *fakeCarrierService) List(ctx context.Context) ([]model.Carrier, e
 	return []model.Carrier{}, nil
 }
 
+func (service *fakeCarrierService) GetByID(ctx context.Context, id int64) (*model.Carrier, error) {
+	return nil, nil
+}
+
 func (service *fakeCarrierService) Create(ctx context.Context, input carrierservice.CreateCarrierInput) (*model.Carrier, error) {
 	return nil, nil
 }

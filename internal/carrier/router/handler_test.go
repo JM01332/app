@@ -50,6 +50,60 @@ func TestListReturnsInternalError(t *testing.T) {
 	assertErrorResponse(t, response, http.StatusInternalServerError, errorCodeInternal)
 }
 
+func TestGetByIDReturnsCarrier(t *testing.T) {
+	router := newTestRouter(&fakeCarrierService{
+		getByIDResult: ptr(testCarrier()),
+	})
+
+	response := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodGet, "/api/carriers/1000", nil)
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusOK {
+		t.Fatalf("status code = %d, want %d", response.Code, http.StatusOK)
+	}
+
+	var body CarrierResponse
+	decodeResponse(t, response, &body)
+	if body.ID != 1000 {
+		t.Fatalf("id = %d, want 1000", body.ID)
+	}
+}
+
+func TestGetByIDRejectsInvalidID(t *testing.T) {
+	router := newTestRouter(&fakeCarrierService{})
+
+	response := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodGet, "/api/carriers/not-a-number", nil)
+	router.ServeHTTP(response, request)
+
+	assertErrorResponse(t, response, http.StatusBadRequest, errorCodeValidationFailed)
+}
+
+func TestGetByIDReturnsNotFound(t *testing.T) {
+	router := newTestRouter(&fakeCarrierService{
+		getByIDError: carrierservice.ErrCarrierNotFound,
+	})
+
+	response := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodGet, "/api/carriers/9999", nil)
+	router.ServeHTTP(response, request)
+
+	assertErrorResponse(t, response, http.StatusNotFound, errorCodeCarrierNotFound)
+}
+
+func TestGetByIDReturnsInternalError(t *testing.T) {
+	router := newTestRouter(&fakeCarrierService{
+		getByIDError: errors.New("database unavailable"),
+	})
+
+	response := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodGet, "/api/carriers/1000", nil)
+	router.ServeHTTP(response, request)
+
+	assertErrorResponse(t, response, http.StatusInternalServerError, errorCodeInternal)
+}
+
 func TestCreateReturnsCreatedCarrier(t *testing.T) {
 	service := &fakeCarrierService{
 		createResult: ptr(testCarrier()),
@@ -144,15 +198,23 @@ func TestCreateReturnsInternalError(t *testing.T) {
 }
 
 type fakeCarrierService struct {
-	listResult   []model.Carrier
-	listError    error
-	createResult *model.Carrier
-	createError  error
-	createInput  carrierservice.CreateCarrierInput
+	listResult    []model.Carrier
+	listError     error
+	getByIDResult *model.Carrier
+	getByIDError  error
+	getByIDID     int64
+	createResult  *model.Carrier
+	createError   error
+	createInput   carrierservice.CreateCarrierInput
 }
 
 func (service *fakeCarrierService) List(ctx context.Context) ([]model.Carrier, error) {
 	return service.listResult, service.listError
+}
+
+func (service *fakeCarrierService) GetByID(ctx context.Context, id int64) (*model.Carrier, error) {
+	service.getByIDID = id
+	return service.getByIDResult, service.getByIDError
 }
 
 func (service *fakeCarrierService) Create(ctx context.Context, input carrierservice.CreateCarrierInput) (*model.Carrier, error) {
