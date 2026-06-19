@@ -15,6 +15,14 @@ const defaultPort = "8080"
 type Config struct {
 	Port        string
 	DatabaseURL string
+	OIDC        OIDCConfig
+}
+
+// OIDCConfig contains the settings required to verify Keycloak access tokens.
+type OIDCConfig struct {
+	IssuerURL string
+	ClientID  string
+	CACert    string
 }
 
 // ServerConfig contains settings needed before database initialization.
@@ -55,10 +63,38 @@ func loadFromEnvironment() (Config, error) {
 	if databaseURL == "" {
 		return Config{}, errors.New("DATABASE_URL is required")
 	}
+	oidcConfig, err := loadOIDCFromEnvironment()
+	if err != nil {
+		return Config{}, err
+	}
 
 	return Config{
 		Port:        serverConfig.Port,
 		DatabaseURL: databaseURL,
+		OIDC:        oidcConfig,
+	}, nil
+}
+
+func loadOIDCFromEnvironment() (OIDCConfig, error) {
+	issuerURL := strings.TrimSpace(os.Getenv("OIDC_ISSUER_URL"))
+	if issuerURL == "" {
+		return OIDCConfig{}, errors.New("OIDC_ISSUER_URL is required")
+	}
+
+	clientID := strings.TrimSpace(os.Getenv("OIDC_CLIENT_ID"))
+	if clientID == "" {
+		return OIDCConfig{}, errors.New("OIDC_CLIENT_ID is required")
+	}
+
+	caCert := strings.TrimSpace(os.Getenv("OIDC_CA_CERT"))
+	if caCert == "" {
+		return OIDCConfig{}, errors.New("OIDC_CA_CERT is required")
+	}
+
+	return OIDCConfig{
+		IssuerURL: issuerURL,
+		ClientID:  clientID,
+		CACert:    caCert,
 	}, nil
 }
 

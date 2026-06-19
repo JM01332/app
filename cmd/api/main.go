@@ -14,6 +14,7 @@ import (
 	carrierservice "github.com/JM01332/app/internal/carrier/service"
 	"github.com/JM01332/app/internal/config"
 	"github.com/JM01332/app/internal/database"
+	"github.com/JM01332/app/internal/security"
 	"go.uber.org/zap"
 )
 
@@ -53,10 +54,19 @@ func main() {
 
 	carrierRepository := carrierservice.NewCarrierRepository(postgres.DB)
 	carrierService := carrierservice.NewCarrierService(carrierRepository)
+	oidcVerifier, err := security.NewOIDCVerifier(
+		context.Background(),
+		appConfig.OIDC.IssuerURL,
+		appConfig.OIDC.ClientID,
+		appConfig.OIDC.CACert,
+	)
+	if err != nil {
+		logger.Fatal("configure OIDC verifier", zap.Error(err))
+	}
 
 	server := &http.Server{
 		Addr:              net.JoinHostPort("", appConfig.Port),
-		Handler:           app.NewRouter(carrierService, logger),
+		Handler:           app.NewRouter(carrierService, logger, oidcVerifier, appConfig.OIDC.ClientID),
 		ReadHeaderTimeout: readHeaderTimeout,
 	}
 

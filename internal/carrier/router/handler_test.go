@@ -226,7 +226,13 @@ func newTestRouter(service CarrierService) *gin.Engine {
 	gin.SetMode(gin.TestMode)
 	router := gin.New()
 	api := router.Group("/api")
-	RegisterRoutes(api, service)
+	allowAll := func(context *gin.Context) {
+		context.Next()
+	}
+	RegisterRoutes(api, service, RouteAuthorization{
+		Read:  allowAll,
+		Write: allowAll,
+	})
 
 	return router
 }
