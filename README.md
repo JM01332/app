@@ -280,3 +280,117 @@ Der abschließende Live-Test war ebenfalls erfolgreich: Der Server konnte die OI
 
 **Commit:**
 `a89c35e feat: secure carrier routes with Keycloak OIDC`
+
+# Agent-Log Jérôme Meier
+
+## 2026-06-19 15:10 +02:00 - PostgreSQL beim Serverstart pruefen
+
+**Prompt an Agent:**
+Der Nutzer hat freigegeben, die passenden Dateien fuer den naechsten Schritt anzulegen und den kompletten docs-Ordner in die .gitignore aufzunehmen.
+
+**Ergebnis des Agenten:**
+`cmd/api/main.go` laedt jetzt die vollstaendige Anwendungskonfiguration, oeffnet beim Start die PostgreSQL-Verbindung ueber GORM und schliesst den Verbindungspool beim Beenden. `.gitignore` ignoriert nun den kompletten `docs/`-Ordner.
+
+**Eigene Pruefung:**
+Noch offen: `go test ./...` und ein lokaler Serverstart, sobald `go` in der Shell verfuegbar ist und die lokale `.env` eine gueltige `DATABASE_URL` enthaelt.
+
+**Commit:**
+Noch offen. Vorschlag: `chore: connect postgres on startup`
+
+## 2026-06-19 15:29 +02:00 - Carrier API-DTOs und Dokumentation
+
+**Prompt an Agent:**
+Der Nutzer hat die aktualisierte Arbeitsaufteilung bestaetigt und beauftragt, vorerst Person B umzusetzen: API-DTOs und Dokumentation, logisch in kleine Commit-Pakete geteilt.
+
+**Ergebnis des Agenten:**
+Angelegt wurden die Create-Request-DTOs mit JSON- und Validator-Tags, Response-DTOs inklusive Fehlerformat, Validierungstests fuer positive und negative Faelle, API-Dokumentation sowie Beispielrequests fuer Liste, gueltigen POST und ungueltigen POST.
+
+**Eigene Pruefung:**
+`gofmt` und `go test ./...` konnten in dieser Shell nicht ausgefuehrt werden, weil `go`/`gofmt` nicht im PATH gefunden werden. Die Tests muessen lokal nachgeholt werden.
+
+**Commit:**
+Noch offen. Vorschlaege: `feat: add carrier API DTOs` und `docs: document carrier API requests`
+
+## 2026-06-19 16:01 +02:00 - Carrier REST-Handler mit Fake-Service
+
+**Prompt an Agent:**
+Der Nutzer hat beauftragt, fuer Person B die Dateien `internal/carrier/router/mapper.go`, `handler.go` und `handler_test.go` umzusetzen: Model-zu-Response-Mapping, GET- und POST-Handler, Request-Binding und Validierung, Ablehnung unbekannter JSON-Felder, Fehlerantworten und Statuscodes sowie Fake-Service fuer Handler-Tests. Dabei soll `int64` fuer IDs beachtet werden.
+
+**Ergebnis des Agenten:**
+Angelegt wurden Mapper fuer Carrier-, Command-Center- und Aircraft-Responses, ein Gin-Handler mit strengem JSON-Decoding, Validator-Pruefung und einheitlichen Fehlerantworten sowie Handler-Tests mit Fake-Service fuer GET, POST, ungueltiges JSON, unbekannte Felder, Validierungsfehler, Namenskonflikt und interne Fehler.
+
+**Eigene Pruefung:**
+`gofmt` und `go test ./...` konnten in dieser Shell nicht ausgefuehrt werden, weil `go`/`gofmt` hier nicht im PATH gefunden werden. Die Pruefung muss lokal nachgeholt werden.
+
+**Commit:**
+Noch offen. Vorschlag: `feat: add carrier REST handlers`
+
+## 2026-06-19 16:23 +02:00 - Carrier API verdrahten
+
+**Prompt an Agent:**
+Der Nutzer hat beauftragt, nach dem Zusammenfuehren der Person-A- und Person-B-Arbeit die Integration umzusetzen: GORM-Zeitstempel mit UTC-`NowFunc` konfigurieren, Repository und Service mit `postgres.DB` erzeugen, den Service an den Gin-Router uebergeben, Carrier-Routen unter `/api` registrieren, Health-Test anpassen und den vollstaendigen Start vorbereiten.
+
+**Ergebnis des Agenten:**
+`internal/database/postgres.go` nutzt nun eine GORM-Konfiguration mit UTC-`NowFunc`. `internal/app/app.go` nimmt einen Carrier-Service entgegen und registriert Carrier-Routen unter `/api`. `cmd/api/main.go` erzeugt Repository und Service aus der bestehenden PostgreSQL-Verbindung und uebergibt den Service an den Router. Tests fuer UTC-NowFunc und Routenregistrierung wurden ergaenzt.
+
+**Eigene Pruefung:**
+`gofmt` und `go test ./...` konnten in dieser Shell nicht ausgefuehrt werden, weil `go`/`gofmt` hier nicht im PATH gefunden werden. Die Pruefung muss lokal nachgeholt werden. Ein vollstaendiger Start sollte lokal mit laufender PostgreSQL-Datenbank und gueltiger `.env` getestet werden.
+
+**Commit:**
+Noch offen. Vorschlaege: `chore: configure gorm UTC timestamps` und `feat: wire carrier API components`
+
+## 2026-06-19 16:35 +02:00 - Schema-qualifizierte Carrier-Tabellen
+
+**Prompt an Agent:**
+Nach dem Live-Test lieferten GET und gueltiger POST `internal_error`. Die Serverlogs zeigten `ERROR: relation "carrier" does not exist`, daher sollte der GORM-Tabellenname gegen das bestehende PostgreSQL-Schema geprueft und korrigiert werden.
+
+**Ergebnis des Agenten:**
+Die `TableName()`-Methoden der Carrier-Modelle verwenden jetzt schema-qualifizierte Tabellennamen: `carrier.carrier`, `carrier.command_center` und `carrier.aircraft`. Ein kleiner Model-Test prueft diese Namen.
+
+**Eigene Pruefung:**
+Noch offen: lokal `gofmt`, `go test ./...`, Server neu starten und GET/POST erneut gegen die laufende Datenbank testen.
+
+**Commit:**
+Noch offen. Vorschlag: `fix: qualify carrier table names with schema`
+
+## 2026-06-19 16:50 +02:00 - Carrier per ID lesen
+
+**Prompt an Agent:**
+Der Nutzer hat den aktuellen Stand nach dem Zusammenfuehren gepullt und beauftragt, zusaetzlich einen GET-Request mit ID zu ergaenzen.
+
+**Ergebnis des Agenten:**
+Repository, Service und Router wurden um `GetByID` erweitert. Der neue Endpunkt `GET /api/carriers/:id` validiert positive numerische IDs, liefert `200 OK` mit Carrier-Response, `400` fuer ungueltige IDs, `404` fuer nicht gefundene Carrier und `500` fuer unerwartete Fehler. Tests und eine Bruno/HTTP-Request-Datei wurden ergaenzt.
+
+**Eigene Pruefung:**
+Noch offen: lokal `gofmt`, `go test ./...`, Server neu starten und `GET /api/carriers/{id}` gegen die laufende Datenbank testen.
+
+**Commit:**
+Noch offen. Vorschlaege: `feat: add carrier detail lookup` und `docs: add carrier detail request`
+
+## 2026-06-19 17:20 +02:00 - OIDC mit bestehendem Keycloak vorbereiten
+
+**Prompt an Agent:**
+Der Nutzer hat beauftragt, die bestehende Keycloak-Installation aus `carrier-api` weiterzuverwenden und OIDC in der Go-API optional zu integrieren.
+
+**Ergebnis des Agenten:**
+Aus dem alten Projekt wurden Realm `python`, Client-ID `python-client` und der lokale Token-Endpunkt `http://localhost:8880/realms/python/protocol/openid-connect/token` ermittelt. Die Go-Konfiguration liest nun optionale OIDC-Variablen. Ein neues `internal/auth`-Package enthaelt OIDC-Verifier und Gin-Middleware. `/health` bleibt oeffentlich, `/api` wird bei aktivierter OIDC-Konfiguration geschuetzt. Request-Dateien enthalten Bearer-Token-Platzhalter und es gibt eine Token-Request-Datei ohne echte Secrets.
+
+**Eigene Pruefung:**
+Noch offen: lokal `go get github.com/coreos/go-oidc/v3`, `gofmt`, `go test ./...`, Start mit `OIDC_ENABLED=true` und Test mit echtem Keycloak-Token. Die Sandbox-Shell findet `go` nicht im PATH.
+
+**Commit:**
+Noch offen. Vorschlaege: `chore: add oidc dependency`, `chore: add oidc configuration`, `feat: add oidc auth middleware`, `feat: protect carrier API routes`, `docs: add authenticated requests`
+
+## 2026-06-19 18:08 +02:00 - Einfacher Integrationstest
+
+**Prompt an Agent:**
+Der Nutzer hat nach dem Zusammenfuehren der Auth-/Rollenpruefung einen einfachen Integrationstest fuer den aktuellen Stand angefordert.
+
+**Ergebnis des Agenten:**
+Angelegt wurde `test/integration_test.go`. Der Test erzeugt den kompletten Gin-Router mit Fake-Service und Fake-Token-Verifier und prueft ohne echte Datenbank oder Keycloak: `/api/carriers` ohne Token liefert `401`, mit User-Rolle liefert die Liste `200`, und `POST /api/carriers` mit User-Rolle liefert `403`.
+
+**Eigene Pruefung:**
+Noch offen: lokal `gofmt` und `go test ./...` ausfuehren.
+
+**Commit:**
+Noch offen. Vorschlag: `test: add authenticated API integration test`
