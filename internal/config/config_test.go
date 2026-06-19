@@ -24,3 +24,13 @@ func TestLoadFromEnvironmentRequiresDatabaseURL(t *testing.T) {
 		t.Fatal("loadFromEnvironment() error = nil, want an error")
 	}
 }
+
+func TestLoadServerFromEnvironmentUsesConfiguredPort(t *testing.T) {
+	t.Setenv("PORT", "9090")
+
+	config := loadServerFromEnvironment()
+
+	if config.Port != "9090" {
+		t.Errorf("Port = %q, want 9090", config.Port)
+	}
+}
