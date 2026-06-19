@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -23,7 +24,7 @@ func OpenPostgres(ctx context.Context, databaseURL string) (*Postgres, error) {
 		return nil, errors.New("database URL is required")
 	}
 
-	db, err := gorm.Open(postgres.Open(databaseURL), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(databaseURL), newGormConfig())
 	if err != nil {
 		return nil, fmt.Errorf("open PostgreSQL connection: %w", err)
 	}
@@ -39,6 +40,14 @@ func OpenPostgres(ctx context.Context, databaseURL string) (*Postgres, error) {
 	}
 
 	return &Postgres{DB: db, pool: pool}, nil
+}
+
+func newGormConfig() *gorm.Config {
+	return &gorm.Config{
+		NowFunc: func() time.Time {
+			return time.Now().UTC()
+		},
+	}
 }
 
 // Close releases all connections in the PostgreSQL pool.
