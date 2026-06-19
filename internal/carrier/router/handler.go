@@ -52,6 +52,7 @@ func RegisterRoutes(router gin.IRouter, service CarrierService) {
 func (handler *Handler) List(context *gin.Context) {
 	carriers, err := handler.service.List(context.Request.Context())
 	if err != nil {
+		_ = context.Error(err)
 		context.JSON(http.StatusInternalServerError, newErrorResponse(errorCodeInternal, "Internal server error", nil))
 		return
 	}
@@ -74,6 +75,7 @@ func (handler *Handler) GetByID(context *gin.Context) {
 		return
 	}
 	if err != nil {
+		_ = context.Error(err)
 		context.JSON(http.StatusInternalServerError, newErrorResponse(errorCodeInternal, "Internal server error", nil))
 		return
 	}
@@ -100,6 +102,7 @@ func (handler *Handler) Create(context *gin.Context) {
 		return
 	}
 	if err != nil {
+		_ = context.Error(err)
 		context.JSON(http.StatusInternalServerError, newErrorResponse(errorCodeInternal, "Internal server error", nil))
 		return
 	}

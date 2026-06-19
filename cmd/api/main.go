@@ -56,7 +56,7 @@ func main() {
 
 	server := &http.Server{
 		Addr:              net.JoinHostPort("", appConfig.Port),
-		Handler:           app.NewRouter(carrierService),
+		Handler:           app.NewRouter(carrierService, logger),
 		ReadHeaderTimeout: readHeaderTimeout,
 	}
 

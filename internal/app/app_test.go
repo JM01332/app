@@ -10,11 +10,12 @@ import (
 	"github.com/JM01332/app/internal/carrier/model"
 	carrierservice "github.com/JM01332/app/internal/carrier/service"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 func TestHealth(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	router := NewRouter(nil)
+	router := NewRouter(nil, zap.NewNop())
 
 	request := httptest.NewRequest(http.MethodGet, "/health", nil)
 	response := httptest.NewRecorder()
@@ -41,7 +42,7 @@ func TestHealth(t *testing.T) {
 
 func TestCarrierRoutesAreRegistered(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	router := NewRouter(&fakeCarrierService{})
+	router := NewRouter(&fakeCarrierService{}, zap.NewNop())
 
 	request := httptest.NewRequest(http.MethodGet, "/api/carriers", nil)
 	response := httptest.NewRecorder()
