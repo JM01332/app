@@ -1,8 +1,10 @@
 @baseUrl = http://localhost:8080
+@accessToken = paste-access-token-here
 
 POST {{baseUrl}}/api/carriers
 Content-Type: application/json
 Accept: application/json
+Authorization: Bearer {{accessToken}}
 
 {
   "name": "",

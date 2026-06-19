@@ -1,9 +1,11 @@
 @baseUrl = http://localhost:8080
+@accessToken = paste-access-token-here
 
 ### Unbekanntes JSON-Feld wird abgelehnt: 400 Bad Request
 POST {{baseUrl}}/api/carriers
 Content-Type: application/json
 Accept: application/json
+Authorization: Bearer {{accessToken}}
 
 {
   "name": "Unknown Field Test",

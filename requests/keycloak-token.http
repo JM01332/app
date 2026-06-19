@@ -1,0 +1,11 @@
+@tokenUrl = http://localhost:8880/realms/python/protocol/openid-connect/token
+@clientId = python-client
+@clientSecret = paste-client-secret-here
+@username = admin
+@password = paste-password-here
+
+POST {{tokenUrl}}
+Content-Type: application/x-www-form-urlencoded
+Accept: application/json
+
+grant_type=password&client_id={{clientId}}&client_secret={{clientSecret}}&username={{username}}&password={{password}}

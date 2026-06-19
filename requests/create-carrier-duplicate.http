@@ -1,9 +1,11 @@
 @baseUrl = http://localhost:8080
+@accessToken = paste-access-token-here
 
 ### Carrier erstmals anlegen: 201 Created
 POST {{baseUrl}}/api/carriers
 Content-Type: application/json
 Accept: application/json
+Authorization: Bearer {{accessToken}}
 
 {
   "name": "Duplicate Name Test",
@@ -20,6 +22,7 @@ Accept: application/json
 POST {{baseUrl}}/api/carriers
 Content-Type: application/json
 Accept: application/json
+Authorization: Bearer {{accessToken}}
 
 {
   "name": "Duplicate Name Test",

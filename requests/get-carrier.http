@@ -1,5 +1,7 @@
 @baseUrl = http://localhost:8080
 @carrierId = 1000
+@accessToken = paste-access-token-here
 
 GET {{baseUrl}}/api/carriers/{{carrierId}}
 Accept: application/json
+Authorization: Bearer {{accessToken}}
