@@ -255,6 +255,15 @@ Keine Secrets, privaten Zugangsdaten oder vollständigen lokalen Pfade in README
 
 ## Git- und Commit-Regeln
 
+### Änderungsfreigabe und Commit-Verantwortung
+
+- Der Agent darf Dateien nur verändern, nachdem der Nutzer die konkrete Änderung ausdrücklich freigegeben hat.
+- Reine Lese-, Analyse- und Prüfaktionen dürfen ohne Änderungsfreigabe durchgeführt werden.
+- Eine allgemeine Aufgabenbesprechung gilt nicht automatisch als Freigabe zur Implementierung; vor dem Schreiben nennt der Agent kurz die vorgesehenen Dateien und Änderungen und fragt nach Zustimmung.
+- Der Agent erstellt keine Git-Commits.
+- Nach einem abgeschlossenen und geprüften Arbeitsschritt weist der Agent den Nutzer darauf hin, dass ein Commit sinnvoll ist, nennt die betroffenen Dateien und schlägt eine Conventional-Commit-Nachricht vor.
+- Der Nutzer prüft und erstellt den Commit selbst.
+
 Vor jedem Commit:
 
 ```bash
@@ -264,7 +273,7 @@ git status --short
 Regeln:
 
 - Nur Dateien committen, die zum aktuellen Schritt gehören.
-- Kleine, lauffähige und erklärbare Commits erstellen.
+- Kleine, lauffähige und erklärbare Commits verwenden.
 - Keine `.env`, Datenbank-Credentials, Tokens oder fremden Änderungen committen.
 - Conventional-Commits-Stil verwenden.
 
