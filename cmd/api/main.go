@@ -2,9 +2,11 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"net"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/JM01332/app/internal/app"
@@ -13,6 +15,14 @@ import (
 )
 
 const readHeaderTimeout = 5 * time.Second
+
+const startupBanner = `
+   ______                _              ___    ____  ____
+  / ____/___ ___________(_)__  _____   /   |  / __ \/  _/
+ / /   / __ ` + "`" + `/ ___/ ___/ / _ \/ ___/  / /| | / /_/ // /
+/ /___/ /_/ / /  / /  / /  __/ /     / ___ |/ ____// /
+\____/\__,_/_/  /_/  /_/\___/_/     /_/  |_/_/   /___/
+`
 
 func main() {
 	logger, err := zap.NewProduction()
@@ -34,8 +44,20 @@ func main() {
 		ReadHeaderTimeout: readHeaderTimeout,
 	}
 
+	printBanner(serverConfig.Port)
 	logger.Info("starting API server", zap.String("address", server.Addr))
 	if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		logger.Fatal("API server stopped", zap.Error(err))
 	}
+}
+
+func printBanner(port string) {
+	baseURL := "http://" + net.JoinHostPort("localhost", port)
+	fmt.Fprintf(
+		os.Stdout,
+		"%s\nCarrier API läuft auf %s\nHealth: %s/health\n\n",
+		startupBanner,
+		baseURL,
+		baseURL,
+	)
 }
