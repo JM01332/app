@@ -1,6 +1,7 @@
 package router
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/go-playground/validator/v10"
@@ -22,6 +23,107 @@ func TestCreateCarrierRequestValidationAcceptsEmptyAircraftList(t *testing.T) {
 
 	if err := validate.Struct(request); err != nil {
 		t.Fatalf("validate.Struct() error = %v, want nil", err)
+	}
+}
+
+func TestCreateCarrierRequestValidationAcceptsBoundaryValues(t *testing.T) {
+	testCases := []struct {
+		name    string
+		request CreateCarrierRequest
+	}{
+		{
+			name: "minimum values",
+			request: CreateCarrierRequest{
+				Name:        "AB",
+				Nation:      "DE",
+				CarrierType: "HELICOPTER_CARRIER",
+				CommandCenter: CreateCommandCenterRequest{
+					CodeName:      "CC",
+					SecurityLevel: 1,
+				},
+				Aircrafts: []CreateAircraftRequest{
+					{Model: "A", Manufacturer: "AB"},
+				},
+			},
+		},
+		{
+			name: "maximum values",
+			request: CreateCarrierRequest{
+				Name:        strings.Repeat("A", 50),
+				Nation:      strings.Repeat("B", 50),
+				CarrierType: "AIRCRAFT_CARRIER",
+				CommandCenter: CreateCommandCenterRequest{
+					CodeName:      strings.Repeat("C", 50),
+					SecurityLevel: 5,
+				},
+				Aircrafts: []CreateAircraftRequest{
+					{Model: strings.Repeat("D", 50), Manufacturer: strings.Repeat("E", 50)},
+				},
+			},
+		},
+	}
+
+	validate := validator.New()
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			if err := validate.Struct(testCase.request); err != nil {
+				t.Fatalf("validate.Struct() error = %v, want nil", err)
+			}
+		})
+	}
+}
+
+func TestCreateCarrierRequestValidationRejectsMissingCommandCenter(t *testing.T) {
+	validate := validator.New()
+	request := validCreateCarrierRequest()
+	request.CommandCenter = CreateCommandCenterRequest{}
+
+	err := validate.Struct(request)
+	if err == nil {
+		t.Fatal("validate.Struct() error = nil, want validation errors")
+	}
+
+	errors := validationErrors(t, err)
+	assertValidationError(t, errors, "CodeName", "required")
+	assertValidationError(t, errors, "SecurityLevel", "required")
+}
+
+func TestCreateCarrierRequestValidationRejectsValuesAboveMaximumLength(t *testing.T) {
+	testCases := []struct {
+		name   string
+		field  string
+		change func(*CreateCarrierRequest)
+	}{
+		{name: "name", field: "Name", change: func(request *CreateCarrierRequest) {
+			request.Name = strings.Repeat("A", 51)
+		}},
+		{name: "nation", field: "Nation", change: func(request *CreateCarrierRequest) {
+			request.Nation = strings.Repeat("A", 51)
+		}},
+		{name: "command center code name", field: "CodeName", change: func(request *CreateCarrierRequest) {
+			request.CommandCenter.CodeName = strings.Repeat("A", 51)
+		}},
+		{name: "aircraft model", field: "Model", change: func(request *CreateCarrierRequest) {
+			request.Aircrafts[0].Model = strings.Repeat("A", 51)
+		}},
+		{name: "aircraft manufacturer", field: "Manufacturer", change: func(request *CreateCarrierRequest) {
+			request.Aircrafts[0].Manufacturer = strings.Repeat("A", 51)
+		}},
+	}
+
+	validate := validator.New()
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			request := validCreateCarrierRequest()
+			testCase.change(&request)
+
+			err := validate.Struct(request)
+			if err == nil {
+				t.Fatal("validate.Struct() error = nil, want validation errors")
+			}
+
+			assertValidationError(t, validationErrors(t, err), testCase.field, "max")
+		})
 	}
 }
 
@@ -65,6 +167,19 @@ func TestCreateCarrierRequestValidationRejectsInvalidSecurityLevel(t *testing.T)
 	}
 
 	assertValidationError(t, validationErrors(t, err), "SecurityLevel", "max")
+}
+
+func TestCreateCarrierRequestValidationRejectsSecurityLevelBelowMinimum(t *testing.T) {
+	validate := validator.New()
+	request := validCreateCarrierRequest()
+	request.CommandCenter.SecurityLevel = -1
+
+	err := validate.Struct(request)
+	if err == nil {
+		t.Fatal("validate.Struct() error = nil, want validation errors")
+	}
+
+	assertValidationError(t, validationErrors(t, err), "SecurityLevel", "min")
 }
 
 func TestCreateCarrierRequestValidationRejectsInvalidAircraft(t *testing.T) {
