@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/JM01332/app/internal/carrier/model"
+	carrierservice "github.com/JM01332/app/internal/carrier/service"
 	"github.com/gin-gonic/gin"
 )
 
@@ -66,8 +67,17 @@ func TestCreateReturnsCreatedCarrier(t *testing.T) {
 	if location := response.Header().Get("Location"); location != "/api/carriers/1000" {
 		t.Fatalf("Location = %q, want /api/carriers/1000", location)
 	}
-	if service.createRequest.Name != "Enterprise" {
-		t.Fatalf("create request name = %q, want Enterprise", service.createRequest.Name)
+	if service.createInput.Name != "Enterprise" {
+		t.Fatalf("create input name = %q, want Enterprise", service.createInput.Name)
+	}
+	if service.createInput.CarrierType != model.CarrierTypeAircraft {
+		t.Fatalf("create input carrier type = %q, want %q", service.createInput.CarrierType, model.CarrierTypeAircraft)
+	}
+	if service.createInput.CommandCenter.CodeName != "Bridge" {
+		t.Fatalf("create input command center = %+v, want Bridge", service.createInput.CommandCenter)
+	}
+	if len(service.createInput.Aircrafts) != 1 || service.createInput.Aircrafts[0].Model != "F/A-18" {
+		t.Fatalf("create input aircrafts = %+v, want F/A-18", service.createInput.Aircrafts)
 	}
 }
 
@@ -106,7 +116,7 @@ func TestCreateRejectsValidationError(t *testing.T) {
 
 func TestCreateReturnsConflictForDuplicateName(t *testing.T) {
 	router := newTestRouter(&fakeCarrierService{
-		createError: ErrCarrierNameExists,
+		createError: carrierservice.ErrCarrierNameExists,
 	})
 
 	response := httptest.NewRecorder()
@@ -131,19 +141,19 @@ func TestCreateReturnsInternalError(t *testing.T) {
 }
 
 type fakeCarrierService struct {
-	listResult    []model.Carrier
-	listError     error
-	createResult  *model.Carrier
-	createError   error
-	createRequest CreateCarrierRequest
+	listResult   []model.Carrier
+	listError    error
+	createResult *model.Carrier
+	createError  error
+	createInput  carrierservice.CreateCarrierInput
 }
 
 func (service *fakeCarrierService) List(ctx context.Context) ([]model.Carrier, error) {
 	return service.listResult, service.listError
 }
 
-func (service *fakeCarrierService) Create(ctx context.Context, request CreateCarrierRequest) (*model.Carrier, error) {
-	service.createRequest = request
+func (service *fakeCarrierService) Create(ctx context.Context, input carrierservice.CreateCarrierInput) (*model.Carrier, error) {
+	service.createInput = input
 	return service.createResult, service.createError
 }
 

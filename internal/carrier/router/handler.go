@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/JM01332/app/internal/carrier/model"
+	carrierservice "github.com/JM01332/app/internal/carrier/service"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 )
@@ -21,11 +22,9 @@ const (
 	errorCodeInternal          = "internal_error"
 )
 
-var ErrCarrierNameExists = errors.New("carrier name exists")
-
 type CarrierService interface {
 	List(ctx context.Context) ([]model.Carrier, error)
-	Create(ctx context.Context, request CreateCarrierRequest) (*model.Carrier, error)
+	Create(ctx context.Context, input carrierservice.CreateCarrierInput) (*model.Carrier, error)
 }
 
 type Handler struct {
@@ -69,8 +68,9 @@ func (handler *Handler) Create(context *gin.Context) {
 		return
 	}
 
-	carrier, err := handler.service.Create(context.Request.Context(), request)
-	if errors.Is(err, ErrCarrierNameExists) {
+	input := mapCreateCarrierInput(request)
+	carrier, err := handler.service.Create(context.Request.Context(), input)
+	if errors.Is(err, carrierservice.ErrCarrierNameExists) {
 		context.JSON(http.StatusConflict, newErrorResponse(errorCodeCarrierNameExists, "Carrier name already exists", nil))
 		return
 	}

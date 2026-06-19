@@ -1,6 +1,30 @@
 package router
 
-import "github.com/JM01332/app/internal/carrier/model"
+import (
+	"github.com/JM01332/app/internal/carrier/model"
+	carrierservice "github.com/JM01332/app/internal/carrier/service"
+)
+
+func mapCreateCarrierInput(request CreateCarrierRequest) carrierservice.CreateCarrierInput {
+	aircrafts := make([]carrierservice.CreateAircraftInput, len(request.Aircrafts))
+	for index, aircraft := range request.Aircrafts {
+		aircrafts[index] = carrierservice.CreateAircraftInput{
+			Model:        aircraft.Model,
+			Manufacturer: aircraft.Manufacturer,
+		}
+	}
+
+	return carrierservice.CreateCarrierInput{
+		Name:        request.Name,
+		Nation:      request.Nation,
+		CarrierType: model.CarrierType(request.CarrierType),
+		CommandCenter: carrierservice.CreateCommandCenterInput{
+			CodeName:      request.CommandCenter.CodeName,
+			SecurityLevel: request.CommandCenter.SecurityLevel,
+		},
+		Aircrafts: aircrafts,
+	}
+}
 
 func mapCarrierResponses(carriers []model.Carrier) []CarrierResponse {
 	responses := make([]CarrierResponse, 0, len(carriers))
