@@ -1,0 +1,5 @@
+@baseUrl = http://localhost:8080
+@carrierId = 1000
+
+GET {{baseUrl}}/api/carriers/{{carrierId}}
+Accept: application/json
