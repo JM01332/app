@@ -3,7 +3,7 @@
 ## Namen
 
 - Mike Steidle
-- [Jerome Meier
+- Jerome Meier
 
 ## Link zum Git-Repository
 
