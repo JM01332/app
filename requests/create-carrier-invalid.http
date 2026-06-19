@@ -1,0 +1,21 @@
+@baseUrl = http://localhost:8080
+
+POST {{baseUrl}}/api/carriers
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "",
+  "nation": "U",
+  "carrierType": "BATTLESHIP",
+  "commandCenter": {
+    "codeName": "",
+    "securityLevel": 6
+  },
+  "aircrafts": [
+    {
+      "model": "",
+      "manufacturer": "A"
+    }
+  ]
+}

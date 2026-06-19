@@ -1,0 +1,21 @@
+@baseUrl = http://localhost:8080
+
+POST {{baseUrl}}/api/carriers
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Enterprise",
+  "nation": "United States",
+  "carrierType": "AIRCRAFT_CARRIER",
+  "commandCenter": {
+    "codeName": "Bridge",
+    "securityLevel": 5
+  },
+  "aircrafts": [
+    {
+      "model": "F/A-18",
+      "manufacturer": "McDonnell Douglas"
+    }
+  ]
+}
