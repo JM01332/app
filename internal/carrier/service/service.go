@@ -9,6 +9,7 @@ import (
 // CarrierStore defines the persistence operations required by CarrierService.
 type CarrierStore interface {
 	List(ctx context.Context) ([]model.Carrier, error)
+	GetByID(ctx context.Context, id int64) (*model.Carrier, error)
 	Create(ctx context.Context, carrier *model.Carrier) error
 }
 
@@ -25,6 +26,11 @@ func NewCarrierService(repository CarrierStore) *CarrierService {
 // List returns all carriers from the repository.
 func (service *CarrierService) List(ctx context.Context) ([]model.Carrier, error) {
 	return service.repository.List(ctx)
+}
+
+// GetByID returns one carrier by its database ID.
+func (service *CarrierService) GetByID(ctx context.Context, id int64) (*model.Carrier, error) {
+	return service.repository.GetByID(ctx, id)
 }
 
 // Create maps validated input and stores the resulting carrier.

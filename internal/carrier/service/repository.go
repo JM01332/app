@@ -40,6 +40,26 @@ func (repository *CarrierRepository) List(ctx context.Context) ([]model.Carrier,
 	return carriers, nil
 }
 
+// GetByID returns one carrier with its relationships by ID.
+func (repository *CarrierRepository) GetByID(ctx context.Context, id int64) (*model.Carrier, error) {
+	var carrier model.Carrier
+
+	result := repository.db.WithContext(ctx).
+		Preload("CommandCenter").
+		Preload("Aircrafts", func(database *gorm.DB) *gorm.DB {
+			return database.Order("aircraft.id ASC")
+		}).
+		First(&carrier, id)
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		return nil, fmt.Errorf("%w: %d", ErrCarrierNotFound, id)
+	}
+	if result.Error != nil {
+		return nil, fmt.Errorf("get carrier by ID: %w", result.Error)
+	}
+
+	return &carrier, nil
+}
+
 // Create stores a carrier and its relationships in one transaction.
 func (repository *CarrierRepository) Create(ctx context.Context, carrier *model.Carrier) error {
 	err := repository.db.WithContext(ctx).Transaction(func(transaction *gorm.DB) error {

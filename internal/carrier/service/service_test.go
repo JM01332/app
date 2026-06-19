@@ -10,6 +10,10 @@ import (
 
 type fakeCarrierStore struct {
 	carriers       []model.Carrier
+	carrier        *model.Carrier
+	getByIDError   error
+	getByIDContext context.Context
+	getByIDID      int64
 	listError      error
 	listContext    context.Context
 	createdCarrier *model.Carrier
@@ -22,10 +26,51 @@ func (store *fakeCarrierStore) List(ctx context.Context) ([]model.Carrier, error
 	return store.carriers, store.listError
 }
 
+func (store *fakeCarrierStore) GetByID(ctx context.Context, id int64) (*model.Carrier, error) {
+	store.getByIDContext = ctx
+	store.getByIDID = id
+	return store.carrier, store.getByIDError
+}
+
 func (store *fakeCarrierStore) Create(ctx context.Context, carrier *model.Carrier) error {
 	store.createContext = ctx
 	store.createdCarrier = carrier
 	return store.createError
+}
+
+func TestCarrierServiceGetByIDReturnsRepositoryResult(t *testing.T) {
+	store := &fakeCarrierStore{
+		carrier: &model.Carrier{ID: 1000, Name: "Enterprise"},
+	}
+	service := NewCarrierService(store)
+	ctx := context.Background()
+
+	carrier, err := service.GetByID(ctx, 1000)
+	if err != nil {
+		t.Fatalf("GetByID() error = %v, want nil", err)
+	}
+	if store.getByIDContext != ctx {
+		t.Error("GetByID() did not forward the context")
+	}
+	if store.getByIDID != 1000 {
+		t.Errorf("GetByID() id = %d, want 1000", store.getByIDID)
+	}
+	if carrier.Name != "Enterprise" {
+		t.Errorf("GetByID() carrier = %+v, want Enterprise", carrier)
+	}
+}
+
+func TestCarrierServiceGetByIDReturnsRepositoryError(t *testing.T) {
+	store := &fakeCarrierStore{getByIDError: ErrCarrierNotFound}
+	service := NewCarrierService(store)
+
+	carrier, err := service.GetByID(context.Background(), 1000)
+	if carrier != nil {
+		t.Errorf("GetByID() carrier = %+v, want nil", carrier)
+	}
+	if !errors.Is(err, ErrCarrierNotFound) {
+		t.Errorf("GetByID() error = %v, want ErrCarrierNotFound", err)
+	}
 }
 
 func TestCarrierServiceListReturnsRepositoryResult(t *testing.T) {
