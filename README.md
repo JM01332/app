@@ -1,3 +1,68 @@
+# Programmierworkshop am 19.6.2026
+
+## Namen
+
+- Mike Steidle
+- [Name des Teamkollegen]
+
+## Link zum Git-Repository
+
+https://github.com/JM01332/app
+
+## KI-Werkzeuge
+
+### Agenten
+
+- OpenAI Codex im IDE-Agentenmodus
+
+### Chat-URLs
+
+- [Freigabelink eintragen, falls vorhanden]
+- Falls nicht vorhanden: „Codex wurde direkt in der IDE verwendet.“
+
+## Frameworks und Bibliotheken
+
+- Gin – HTTP-Router und REST-Schnittstelle
+- GORM v2 – ORM und PostgreSQL-Zugriff
+- PostgreSQL-Treiber für GORM
+- go-playground/validator – Request-Validierung
+- coreos/go-oidc – OIDC-Authentifizierung mit Keycloak
+- Zap – strukturiertes Logging
+- godotenv – Laden der lokalen Konfiguration
+- testing und net/http/httptest – automatisierte Tests
+
+### REST-Schnittstelle (Lesen und Neuanlegen)
+
+- `GET /api/carriers`
+- `GET /api/carriers/:id`
+- `POST /api/carriers`
+- `GET /health`
+
+### Validierung (nur Neuanlegen)
+
+POST-Requests werden mit `go-playground/validator` auf Pflichtfelder,
+Textlängen, Carrier-Typ und Security-Level geprüft.
+
+### OR-Mapping (für PostgreSQL)
+
+GORM v2 mit `gorm.io/driver/postgres`. Die bestehenden Tabellen
+`carrier`, `command_center` und `aircraft` werden ohne Auto-Migration verwendet.
+
+### Optional: OIDC mit Keycloak
+
+Bearer Tokens werden über OIDC geprüft. GET ist für USER und ADMIN erlaubt,
+POST nur für ADMIN. Der Health-Endpunkt bleibt öffentlich.
+
+### Einfacher Integrationstest
+
+`test/integration_test.go` prüft Router, Authentifizierung,
+Autorisierung und Carrier-Handler gemeinsam.
+
+Ausführen mit:
+
+```powershell
+go test ./...
+
 # Agent-Log Mike Steidle
 
 Dieses Log enthält nur Prompts und Entscheidungen, die zu einem überprüfbaren Projektfortschritt geführt haben. Reine Verständnisfragen, kurze Rückfragen und Nachrichten wie „weiter“ werden nicht einzeln protokolliert.
