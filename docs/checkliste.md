@@ -35,9 +35,9 @@ Diese Checkliste begleitet die Umsetzung der Go-REST-API. Zuständigkeiten werde
 - [x] `DATABASE_URL` oder vereinbarte DB-Variablen dokumentieren
 - [x] GORM-Verbindung implementieren
 - [x] Verbindungsfehler kontrolliert behandeln
-- [ ] Bestehendes Datenbankschema prüfen
+- [x] Bestehendes Datenbankschema prüfen
 - [ ] GORM-Modell anhand des Schemas anlegen
-- [ ] Keine Migration ohne vorherige Abstimmung ausführen
+- [x] Keine Migration ohne vorherige Abstimmung ausführen
 
 ### Gemeinsame Prüfung
 
