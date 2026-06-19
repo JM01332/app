@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/JM01332/app/internal/app"
+	carrierservice "github.com/JM01332/app/internal/carrier/service"
 	"github.com/JM01332/app/internal/config"
 	"github.com/JM01332/app/internal/database"
 	"go.uber.org/zap"
@@ -50,9 +51,12 @@ func main() {
 		}
 	}()
 
+	carrierRepository := carrierservice.NewCarrierRepository(postgres.DB)
+	carrierService := carrierservice.NewCarrierService(carrierRepository)
+
 	server := &http.Server{
 		Addr:              net.JoinHostPort("", appConfig.Port),
-		Handler:           app.NewRouter(),
+		Handler:           app.NewRouter(carrierService),
 		ReadHeaderTimeout: readHeaderTimeout,
 	}
 
