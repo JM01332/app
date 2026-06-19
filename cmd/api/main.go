@@ -11,11 +11,10 @@ import (
 	"time"
 
 	"github.com/JM01332/app/internal/app"
-	"github.com/JM01332/app/internal/auth"
 	carrierservice "github.com/JM01332/app/internal/carrier/service"
 	"github.com/JM01332/app/internal/config"
 	"github.com/JM01332/app/internal/database"
-	"github.com/gin-gonic/gin"
+	"github.com/JM01332/app/internal/security"
 	"go.uber.org/zap"
 )
 
@@ -55,20 +54,19 @@ func main() {
 
 	carrierRepository := carrierservice.NewCarrierRepository(postgres.DB)
 	carrierService := carrierservice.NewCarrierService(carrierRepository)
-
-	var authMiddleware gin.HandlerFunc
-	if appConfig.OIDC.Enabled {
-		verifier, err := auth.NewOIDCVerifier(context.Background(), appConfig.OIDC.IssuerURL, appConfig.OIDC.ClientID)
-		if err != nil {
-			logger.Fatal("create OIDC verifier", zap.Error(err))
-		}
-		authMiddleware = auth.Middleware(verifier)
-		logger.Info("OIDC authentication enabled", zap.String("issuer_url", appConfig.OIDC.IssuerURL), zap.String("client_id", appConfig.OIDC.ClientID))
+	oidcVerifier, err := security.NewOIDCVerifier(
+		context.Background(),
+		appConfig.OIDC.IssuerURL,
+		appConfig.OIDC.ClientID,
+		appConfig.OIDC.CACert,
+	)
+	if err != nil {
+		logger.Fatal("configure OIDC verifier", zap.Error(err))
 	}
 
 	server := &http.Server{
 		Addr:              net.JoinHostPort("", appConfig.Port),
-		Handler:           app.NewRouter(carrierService, logger, authMiddleware),
+		Handler:           app.NewRouter(carrierService, logger, oidcVerifier, appConfig.OIDC.ClientID),
 		ReadHeaderTimeout: readHeaderTimeout,
 	}
 

@@ -3,9 +3,8 @@ package config
 import "testing"
 
 func TestLoadFromEnvironmentUsesDefaultPort(t *testing.T) {
+	setRequiredEnvironment(t)
 	t.Setenv("PORT", "")
-	t.Setenv("DATABASE_URL", "postgres://example")
-	t.Setenv("OIDC_ENABLED", "")
 
 	config, err := loadFromEnvironment()
 	if err != nil {
@@ -18,12 +17,32 @@ func TestLoadFromEnvironmentUsesDefaultPort(t *testing.T) {
 }
 
 func TestLoadFromEnvironmentRequiresDatabaseURL(t *testing.T) {
+	setRequiredEnvironment(t)
 	t.Setenv("DATABASE_URL", "")
-	t.Setenv("OIDC_ENABLED", "")
 
 	_, err := loadFromEnvironment()
 	if err == nil {
 		t.Fatal("loadFromEnvironment() error = nil, want an error")
+	}
+}
+
+func TestLoadFromEnvironmentRequiresOIDCSettings(t *testing.T) {
+	testCases := []string{
+		"OIDC_ISSUER_URL",
+		"OIDC_CLIENT_ID",
+		"OIDC_CA_CERT",
+	}
+
+	for _, environmentVariable := range testCases {
+		t.Run(environmentVariable, func(t *testing.T) {
+			setRequiredEnvironment(t)
+			t.Setenv(environmentVariable, "")
+
+			_, err := loadFromEnvironment()
+			if err == nil {
+				t.Fatalf("loadFromEnvironment() error = nil, want error for %s", environmentVariable)
+			}
+		})
 	}
 }
 
@@ -37,45 +56,10 @@ func TestLoadServerFromEnvironmentUsesConfiguredPort(t *testing.T) {
 	}
 }
 
-func TestLoadFromEnvironmentReadsOIDCConfig(t *testing.T) {
+func setRequiredEnvironment(t *testing.T) {
+	t.Helper()
 	t.Setenv("DATABASE_URL", "postgres://example")
-	t.Setenv("OIDC_ENABLED", "true")
-	t.Setenv("OIDC_ISSUER_URL", "http://localhost:8880/realms/python")
+	t.Setenv("OIDC_ISSUER_URL", "https://localhost:8843/realms/python")
 	t.Setenv("OIDC_CLIENT_ID", "python-client")
-
-	config, err := loadFromEnvironment()
-	if err != nil {
-		t.Fatalf("loadFromEnvironment() error = %v", err)
-	}
-
-	if !config.OIDC.Enabled {
-		t.Fatal("OIDC.Enabled = false, want true")
-	}
-	if config.OIDC.IssuerURL != "http://localhost:8880/realms/python" {
-		t.Errorf("OIDC.IssuerURL = %q, want Keycloak issuer", config.OIDC.IssuerURL)
-	}
-	if config.OIDC.ClientID != "python-client" {
-		t.Errorf("OIDC.ClientID = %q, want python-client", config.OIDC.ClientID)
-	}
-}
-
-func TestLoadFromEnvironmentRequiresOIDCIssuerWhenEnabled(t *testing.T) {
-	t.Setenv("DATABASE_URL", "postgres://example")
-	t.Setenv("OIDC_ENABLED", "true")
-	t.Setenv("OIDC_CLIENT_ID", "python-client")
-
-	_, err := loadFromEnvironment()
-	if err == nil {
-		t.Fatal("loadFromEnvironment() error = nil, want an error")
-	}
-}
-
-func TestLoadFromEnvironmentRejectsInvalidOIDCEnabled(t *testing.T) {
-	t.Setenv("DATABASE_URL", "postgres://example")
-	t.Setenv("OIDC_ENABLED", "sometimes")
-
-	_, err := loadFromEnvironment()
-	if err == nil {
-		t.Fatal("loadFromEnvironment() error = nil, want an error")
-	}
+	t.Setenv("OIDC_CA_CERT", "certificate.crt")
 }

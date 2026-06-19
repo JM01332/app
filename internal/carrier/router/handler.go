@@ -34,6 +34,12 @@ type Handler struct {
 	validate *validator.Validate
 }
 
+// RouteAuthorization contains role checks for read and write routes.
+type RouteAuthorization struct {
+	Read  gin.HandlerFunc
+	Write gin.HandlerFunc
+}
+
 func NewHandler(service CarrierService) *Handler {
 	return &Handler{
 		service:  service,
@@ -41,12 +47,12 @@ func NewHandler(service CarrierService) *Handler {
 	}
 }
 
-func RegisterRoutes(router gin.IRouter, service CarrierService) {
+func RegisterRoutes(router gin.IRouter, service CarrierService, authorization RouteAuthorization) {
 	handler := NewHandler(service)
 
-	router.GET("/carriers", handler.List)
-	router.GET("/carriers/:id", handler.GetByID)
-	router.POST("/carriers", handler.Create)
+	router.GET("/carriers", authorization.Read, handler.List)
+	router.GET("/carriers/:id", authorization.Read, handler.GetByID)
+	router.POST("/carriers", authorization.Write, handler.Create)
 }
 
 func (handler *Handler) List(context *gin.Context) {
